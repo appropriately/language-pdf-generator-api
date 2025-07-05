@@ -1,1 +1,32 @@
-# language-pdf-generator-api
+# Language PDF Generator API <!-- omit in toc -->
+
+- [Setup](#setup)
+- [Available Scripts](#available-scripts)
+
+## Setup
+
+1. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+2. **Set up environment variables**
+   ```bash
+   cp env.example .env
+   # Edit .env with your configuration
+   ```
+
+3. **Start the development server**
+   ```bash
+   npm run dev
+   ```
+
+## Available Scripts
+
+- `npm start` - Start the production server
+- `npm run dev` - Start development server with hot reload
+- `npm run build` - Build the TypeScript code
+- `npm run serve` - Serve the built application
+- `npm test` - Run tests
+- `npm run lint` - Run ESLint
+- `npm run lint:fix` - Fix ESLint issues
