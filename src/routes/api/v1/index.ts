@@ -1,30 +1,29 @@
-import { FastifyInstance } from "fastify";
 import {
-  ResponseStandardizer,
-  SuccessResponse,
-  SuccessResponseType,
-} from "../../../utils/responseStandardizer.js";
+  FastifyPluginAsyncTypebox,
+  Type,
+} from "@fastify/type-provider-typebox";
 
-export default async function routes(fastify: FastifyInstance): Promise<void> {
-  fastify.get<{ Reply: SuccessResponseType }>(
+const rootSchema = {
+  tags: ["root"],
+  response: {
+    200: Type.Object({
+      name: Type.String(),
+      version: Type.String(),
+    }),
+  },
+};
+
+const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
+  fastify.get(
     "/",
     {
-      schema: {
-        tags: ["root"],
-        response: {
-          200: SuccessResponse,
-        },
-      },
+      schema: rootSchema,
     },
-    async (_request, reply) => {
-      ResponseStandardizer.success(
-        reply,
-        {
-          name: "Language PDF Generator API",
-          version: process.env.npm_package_version,
-        },
-        "API is running"
-      );
-    }
+    async () => ({
+      name: "Language PDF Generator API",
+      version: process.env.npm_package_version || "unknown",
+    })
   );
-}
+};
+
+export default plugin;

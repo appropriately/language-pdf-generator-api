@@ -1,4 +1,5 @@
 import fastifyAutoload from "@fastify/autoload";
+import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import fastify, {
   FastifyInstance,
   FastifyReply,
@@ -6,7 +7,6 @@ import fastify, {
 } from "fastify";
 import path from "node:path";
 import { config } from "./config/index.js";
-import { ResponseStandardizer } from "./utils/responseStandardizer.js";
 
 /**
  * Create a Fastify instance
@@ -23,7 +23,7 @@ export const createInstance = async (): Promise<FastifyInstance> => {
     bodyLimit: config.fastify.requestBodySizeLimit,
     connectionTimeout: config.fastify.connectionTimeout,
     keepAliveTimeout: config.fastify.keepAliveTimeout,
-  });
+  }).withTypeProvider<TypeBoxTypeProvider>();
 
   await app.register(import("@fastify/helmet"));
   await app.register(import("@fastify/cors"), {
@@ -69,20 +69,21 @@ export const createInstance = async (): Promise<FastifyInstance> => {
   });
 
   app.setNotFoundHandler((request: FastifyRequest, reply: FastifyReply) =>
-    ResponseStandardizer.notFound(
-      reply,
-      `Route ${request.method} ${request.url} not found`
-    )
+    reply.status(404).send({
+      error: `Route ${request.method} ${request.url} not found`,
+    })
   );
 
   app.setErrorHandler((err, _req, reply) => {
     const statusCode = err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
+    const error = err.message || "Internal Server Error";
 
-    app.log.error(`Error ${statusCode}: ${message}`);
+    app.log.error(`Error ${statusCode}: ${error}`);
     app.log.error(err.stack);
 
-    ResponseStandardizer.error(reply, message, statusCode);
+    reply.status(statusCode).send({
+      error,
+    });
   });
 
   await app.ready();

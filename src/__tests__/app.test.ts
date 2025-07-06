@@ -16,7 +16,9 @@ describe("App", () => {
   it("should return API info for root endpoint", async () => {
     const response = await request(app.server).get("/api/v1");
     expect(response.status).toBe(200);
-    expect(response.body).toHaveProperty("message");
+    expect(response.body).toHaveProperty("name");
+    expect(response.body).toHaveProperty("version");
+    expect(response.body.version).toBe(process.env.npm_package_version);
   });
 
   it("should return 404 for non-existent route", async () => {
