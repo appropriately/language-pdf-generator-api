@@ -25,39 +25,9 @@ export const createInstance = async (): Promise<FastifyInstance> => {
     keepAliveTimeout: config.fastify.keepAliveTimeout,
   }).withTypeProvider<TypeBoxTypeProvider>();
 
-  await app.register(import("@fastify/helmet"));
-  await app.register(import("@fastify/cors"), {
-    origin: config.cors.origin,
-    credentials: config.cors.credentials,
-    methods: config.cors.methods,
-    allowedHeaders: config.cors.allowedHeaders,
-  });
-  await app.register(import("@fastify/rate-limit"), {
-    max: 100,
-    timeWindow: "15 minutes",
-  });
-  await app.register(import("@fastify/swagger"), {
-    openapi: {
-      openapi: "3.0.0",
-      info: {
-        title: "Language PDF Generator API",
-        description: "Language PDF Generator API",
-        version: process.env.npm_package_version || "1.0.0",
-      },
-      tags: [
-        {
-          name: "root",
-          description: "Root endpoint",
-        },
-      ],
-    },
-  });
-  await app.register(import("@fastify/swagger-ui"), {
-    routePrefix: "/docs",
-    uiConfig: {
-      docExpansion: "full",
-      deepLinking: true,
-    },
+  // Registers external plugins.
+  await app.register(fastifyAutoload, {
+    dir: path.join(import.meta.dirname, "plugins/external"),
   });
 
   // Register routes by reading the routes directory and automatically constructing the path.
