@@ -11,17 +11,15 @@ const startServer = async (): Promise<void> => {
         process.exit(1);
       }
 
-      app.log.info(`🚀 Language PDF Generator API running on port ${address}`);
-
-      app.log.debug(
-        `🚀 Language PDF Generator API running on port ${config.port}`
+      app.log.info(
+        `Server running, environment: ${config.nodeEnv}, address: ${address}, log level: ${config.logLevel}`
       );
-      app.log.debug(`📊 Environment: ${config.nodeEnv}`);
+      app.log.debug(`Documentation available at ${address}/docs`);
     });
 
     const gracefulShutdown = async (signal: string): Promise<void> => {
       app.log.info(`${signal} received, shutting down gracefully`);
-      
+
       const shutdownTimeout = setTimeout(() => {
         app.log.warn("Forced shutdown after timeout");
         process.exit(1);
@@ -30,7 +28,7 @@ const startServer = async (): Promise<void> => {
       try {
         await app.close();
         app.log.info("Server closed successfully");
-        
+
         clearTimeout(shutdownTimeout);
         app.log.info("Process terminated gracefully");
         process.exit(0);
@@ -42,19 +40,15 @@ const startServer = async (): Promise<void> => {
     };
 
     process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
-    
     process.on("SIGINT", () => gracefulShutdown("SIGINT"));
-    
     process.on("uncaughtException", (error) => {
       app.log.error("Uncaught Exception:", error);
       gracefulShutdown("uncaughtException");
     });
-    
     process.on("unhandledRejection", (reason, promise) => {
       app.log.error("Unhandled Rejection at:", promise, "reason:", reason);
       gracefulShutdown("unhandledRejection");
     });
-
   } catch (error) {
     console.error("Failed to start server:", error);
     process.exit(1);

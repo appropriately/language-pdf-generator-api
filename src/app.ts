@@ -36,6 +36,29 @@ export const createInstance = async (): Promise<FastifyInstance> => {
     max: 100,
     timeWindow: "15 minutes",
   });
+  await app.register(import("@fastify/swagger"), {
+    openapi: {
+      openapi: "3.0.0",
+      info: {
+        title: "Language PDF Generator API",
+        description: "Language PDF Generator API",
+        version: process.env.npm_package_version || "1.0.0",
+      },
+      tags: [
+        {
+          name: "root",
+          description: "Root endpoint",
+        },
+      ],
+    },
+  });
+  await app.register(import("@fastify/swagger-ui"), {
+    routePrefix: "/docs",
+    uiConfig: {
+      docExpansion: "full",
+      deepLinking: true,
+    },
+  });
 
   // Register routes by reading the routes directory and automatically constructing the path.
   // @see https://github.com/fastify/fastify-autoload

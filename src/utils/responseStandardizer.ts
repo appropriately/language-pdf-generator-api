@@ -1,11 +1,21 @@
+import { Static, Type } from "@sinclair/typebox";
 import { FastifyReply } from "fastify";
 
-export interface ApiResponse<T = unknown> {
-  success: boolean;
-  message: string;
-  data?: T;
-  error?: string;
-}
+export const SuccessResponse = Type.Object({
+  success: Type.Literal(true),
+  message: Type.String(),
+  data: Type.Optional(Type.Any()),
+});
+
+export const ErrorResponse = Type.Object({
+  success: Type.Literal(false),
+  message: Type.String(),
+  error: Type.String(),
+});
+
+export type SuccessResponseType = Static<typeof SuccessResponse>;
+export type ErrorResponseType = Static<typeof ErrorResponse>;
+export type ApiResponseType = SuccessResponseType | ErrorResponseType;
 
 /**
  * A class for standardizing the response format of the API.
@@ -18,7 +28,7 @@ export interface ApiResponse<T = unknown> {
  */
 export class ResponseStandardizer {
   static success<T>(reply: FastifyReply, data: T, message = "Success"): void {
-    const response: ApiResponse<T> = {
+    const response: SuccessResponseType = {
       success: true,
       message,
       data,
@@ -27,7 +37,7 @@ export class ResponseStandardizer {
   }
 
   static error(reply: FastifyReply, message: string, statusCode = 500): void {
-    const response: ApiResponse = {
+    const response: ErrorResponseType = {
       success: false,
       message,
       error: message,

@@ -7,7 +7,7 @@
 
 ## About
 
-Built to experiment with Fastify and TypeScript.
+Built to experiment with Fastify and TypeScript. When deployed, documentation is available at `/docs`.
 
 ### Stack
 

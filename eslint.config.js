@@ -35,6 +35,6 @@ export default [
     },
   },
   {
-    ignores: ["dist/", "node_modules/", "**/*.d.ts"],
+    ignores: ["dist/", "node_modules/", "**/*.d.ts", "jest.config.ts"],
   },
 ];
