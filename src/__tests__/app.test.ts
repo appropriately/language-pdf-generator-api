@@ -1,16 +1,27 @@
-import request from 'supertest';
-import app from '../app';
+import { FastifyInstance } from "fastify";
+import request from "supertest";
+import { createInstance } from "../app.js";
 
-describe('App', () => {
-  it('should return API info for root endpoint', async () => {
-    const response = await request(app).get('/api/v1');
+describe("App", () => {
+  let app: FastifyInstance;
+
+  beforeAll(async () => {
+    app = await createInstance();
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it("should return API info for root endpoint", async () => {
+    const response = await request(app.server).get("/api/v1");
     expect(response.status).toBe(200);
-    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty("message");
   });
 
-  it('should return 404 for non-existent route', async () => {
-    const response = await request(app).get('/non-existent');
+  it("should return 404 for non-existent route", async () => {
+    const response = await request(app.server).get("/non-existent");
     expect(response.status).toBe(404);
-    expect(response.body).toHaveProperty('error');
+    expect(response.body).toHaveProperty("error");
   });
-}); 
+});

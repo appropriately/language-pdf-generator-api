@@ -1,52 +1,70 @@
-import compression from "compression";
-import cors from "cors";
-import express from "express";
-import rateLimit from "express-rate-limit";
-import helmet from "helmet";
-import morgan from "morgan";
-import { config } from "./config";
-import { errorHandler } from "./middleware/errorHandler";
-import { notFoundHandler } from "./middleware/notFoundHandler";
-import routes from "./routes";
+import fastifyAutoload from "@fastify/autoload";
+import fastify, {
+  FastifyInstance,
+  FastifyReply,
+  FastifyRequest,
+} from "fastify";
+import path from "node:path";
+import { config } from "./config/index.js";
+import { ResponseStandardizer } from "./utils/responseStandardizer.js";
 
-const app = express();
+/**
+ * Create a Fastify instance
+ * @description This function creates a Fastify instance and registers the necessary plugins.
+ * It also sets up the connection timeout and keep-alive timeout for better shutdown.
+ * It waits for the app to be ready before returning.
+ * @returns Fastify instance
+ */
+export const createInstance = async (): Promise<FastifyInstance> => {
+  const app: FastifyInstance = fastify({
+    logger: {
+      level: config.logLevel,
+    },
+    bodyLimit: config.fastify.requestBodySizeLimit,
+    connectionTimeout: config.fastify.connectionTimeout,
+    keepAliveTimeout: config.fastify.keepAliveTimeout,
+  });
 
-app.use(helmet());
+  await app.register(import("@fastify/helmet"));
+  await app.register(import("@fastify/cors"), {
+    origin: config.cors.origin,
+    credentials: config.cors.credentials,
+    methods: config.cors.methods,
+    allowedHeaders: config.cors.allowedHeaders,
+  });
+  await app.register(import("@fastify/rate-limit"), {
+    max: 100,
+    timeWindow: "15 minutes",
+  });
 
-app.use(
-  cors({
-    origin: config.corsOrigins,
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-  })
-);
+  // Register routes by reading the routes directory and automatically constructing the path.
+  // @see https://github.com/fastify/fastify-autoload
+  await app.register(fastifyAutoload, {
+    dir: path.join(import.meta.dirname, "routes"),
+    autoHooks: true,
+    cascadeHooks: true,
+  });
 
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: "Too many requests from this IP, please try again later.",
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-app.use(limiter);
+  app.setNotFoundHandler((request: FastifyRequest, reply: FastifyReply) =>
+    ResponseStandardizer.notFound(
+      reply,
+      `Route ${request.method} ${request.url} not found`
+    )
+  );
 
-app.use(compression());
+  app.setErrorHandler((err, _req, reply) => {
+    const statusCode = err.statusCode || 500;
+    const message = err.message || "Internal Server Error";
 
-app.use(morgan("dev"));
+    app.log.error(`Error ${statusCode}: ${message}`);
+    app.log.error(err.stack);
 
-app.use(express.json({ limit: config.express.requestBodySizeLimit }));
-app.use(
-  express.urlencoded({
-    extended: true,
-    limit: config.express.requestBodySizeLimit,
-  })
-);
+    ResponseStandardizer.error(reply, message, statusCode);
+  });
 
-app.use("/api/v1", routes);
+  await app.ready();
 
-app.use(notFoundHandler);
+  return app;
+};
 
-app.use(errorHandler);
-
-export default app;
+export default createInstance;

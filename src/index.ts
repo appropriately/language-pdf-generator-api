@@ -1,25 +1,64 @@
-import app from "./app";
-import { config } from "./config";
+import { createInstance } from "./app.js";
+import { config } from "./config/index.js";
 
-const server = app.listen(config.port, () => {
-  console.log(`🚀 Language PDF Generator API running on port ${config.port}`);
-  console.log(`📊 Environment: ${config.nodeEnv}`);
-});
+const startServer = async (): Promise<void> => {
+  try {
+    const app = await createInstance();
 
-process.on("SIGTERM", () => {
-  console.log("SIGTERM received, shutting down gracefully");
-  server.close(() => {
-    console.log("Process terminated");
-    process.exit(0);
-  });
-});
+    await app.listen({ port: config.port, host: "0.0.0.0" }, (err, address) => {
+      if (err) {
+        app.log.error(err);
+        process.exit(1);
+      }
 
-process.on("SIGINT", () => {
-  console.log("SIGINT received, shutting down gracefully");
-  server.close(() => {
-    console.log("Process terminated");
-    process.exit(0);
-  });
-});
+      app.log.info(`🚀 Language PDF Generator API running on port ${address}`);
 
-export default server;
+      app.log.debug(
+        `🚀 Language PDF Generator API running on port ${config.port}`
+      );
+      app.log.debug(`📊 Environment: ${config.nodeEnv}`);
+    });
+
+    const gracefulShutdown = async (signal: string): Promise<void> => {
+      app.log.info(`${signal} received, shutting down gracefully`);
+      
+      const shutdownTimeout = setTimeout(() => {
+        app.log.warn("Forced shutdown after timeout");
+        process.exit(1);
+      }, 30000);
+
+      try {
+        await app.close();
+        app.log.info("Server closed successfully");
+        
+        clearTimeout(shutdownTimeout);
+        app.log.info("Process terminated gracefully");
+        process.exit(0);
+      } catch (error) {
+        app.log.error("Error during shutdown:", error);
+        clearTimeout(shutdownTimeout);
+        process.exit(1);
+      }
+    };
+
+    process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+    
+    process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+    
+    process.on("uncaughtException", (error) => {
+      app.log.error("Uncaught Exception:", error);
+      gracefulShutdown("uncaughtException");
+    });
+    
+    process.on("unhandledRejection", (reason, promise) => {
+      app.log.error("Unhandled Rejection at:", promise, "reason:", reason);
+      gracefulShutdown("unhandledRejection");
+    });
+
+  } catch (error) {
+    console.error("Failed to start server:", error);
+    process.exit(1);
+  }
+};
+
+startServer();

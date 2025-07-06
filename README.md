@@ -1,7 +1,20 @@
 # Language PDF Generator API <!-- omit in toc -->
 
+- [About](#about)
+  - [Stack](#stack)
 - [Setup](#setup)
 - [Available Scripts](#available-scripts)
+
+## About
+
+Built to experiment with Fastify and TypeScript.
+
+### Stack
+
+- Fastify
+- TypeScript
+- Jest
+- ESLint
 
 ## Setup
 
@@ -26,7 +39,6 @@
 - `npm start` - Start the production server
 - `npm run dev` - Start development server with hot reload
 - `npm run build` - Build the TypeScript code
-- `npm run serve` - Serve the built application
-- `npm test` - Run tests
 - `npm run lint` - Run ESLint
 - `npm run lint:fix` - Fix ESLint issues
+- `npm run test` - Run tests

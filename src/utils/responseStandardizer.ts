@@ -1,4 +1,4 @@
-import { Response } from 'express';
+import { FastifyReply } from "fastify";
 
 export interface ApiResponse<T = unknown> {
   success: boolean;
@@ -7,30 +7,39 @@ export interface ApiResponse<T = unknown> {
   error?: string;
 }
 
+/**
+ * A class for standardizing the response format of the API.
+ * @class ResponseStandardizer
+ * @static
+ * @method success Standardizes the success response format
+ * @method error Standardizes the error response format
+ * @method notFound Equivalent to error(reply, message, 404)
+ * @method badRequest Equivalent to error(reply, message, 400)
+ */
 export class ResponseStandardizer {
-  static success<T>(res: Response, data: T, message = 'Success'): void {
+  static success<T>(reply: FastifyReply, data: T, message = "Success"): void {
     const response: ApiResponse<T> = {
       success: true,
       message,
       data,
     };
-    res.json(response);
+    reply.send(response);
   }
 
-  static error(res: Response, message: string, statusCode = 500): void {
+  static error(reply: FastifyReply, message: string, statusCode = 500): void {
     const response: ApiResponse = {
       success: false,
       message,
       error: message,
     };
-    res.status(statusCode).json(response);
+    reply.status(statusCode).send(response);
   }
 
-  static notFound(res: Response, message = 'Resource not found'): void {
-    this.error(res, message, 404);
+  static notFound(reply: FastifyReply, message = "Resource not found"): void {
+    this.error(reply, message, 404);
   }
 
-  static badRequest(res: Response, message = 'Bad request'): void {
-    this.error(res, message, 400);
+  static badRequest(reply: FastifyReply, message = "Bad request"): void {
+    this.error(reply, message, 400);
   }
-} 
+}
