@@ -4,7 +4,6 @@ import {
 } from "@fastify/type-provider-typebox";
 
 const rootSchema = {
-  tags: ["root"],
   response: {
     200: Type.Object({
       name: Type.String(),

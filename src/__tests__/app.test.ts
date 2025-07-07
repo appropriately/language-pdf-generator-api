@@ -2,11 +2,11 @@ import { FastifyInstance } from "fastify";
 import request from "supertest";
 import { createInstance } from "../app.js";
 
-describe("App", () => {
+describe("Base Endpoints", () => {
   let app: FastifyInstance;
 
   beforeAll(async () => {
-    app = await createInstance();
+    app = await createInstance({ logLevel: "warn" });
   });
 
   afterAll(async () => {

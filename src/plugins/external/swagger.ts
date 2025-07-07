@@ -11,8 +11,8 @@ export default fp(async (fastify) => {
       },
       tags: [
         {
-          name: "root",
-          description: "Root endpoint",
+          name: "pdf",
+          description: "Create and manage PDFs",
         },
       ],
     },
@@ -20,7 +20,7 @@ export default fp(async (fastify) => {
   await fastify.register(import("@fastify/swagger-ui"), {
     routePrefix: "/docs",
     uiConfig: {
-      docExpansion: "full",
+      docExpansion: "list",
       deepLinking: true,
     },
   });

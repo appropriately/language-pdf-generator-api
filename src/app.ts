@@ -8,6 +8,10 @@ import fastify, {
 import path from "node:path";
 import { config } from "./config/index.js";
 
+interface InstanceOptions {
+  logLevel?: "trace" | "debug" | "info" | "warn" | "error" | "fatal";
+}
+
 /**
  * Create a Fastify instance
  * @description This function creates a Fastify instance and registers the necessary plugins.
@@ -15,10 +19,12 @@ import { config } from "./config/index.js";
  * It waits for the app to be ready before returning.
  * @returns Fastify instance
  */
-export const createInstance = async (): Promise<FastifyInstance> => {
+export const createInstance = async (
+  opts: InstanceOptions = {}
+): Promise<FastifyInstance> => {
   const app: FastifyInstance = fastify({
     logger: {
-      level: config.logLevel,
+      level: opts.logLevel ?? config.logLevel,
     },
     bodyLimit: config.fastify.requestBodySizeLimit,
     connectionTimeout: config.fastify.connectionTimeout,
@@ -28,6 +34,11 @@ export const createInstance = async (): Promise<FastifyInstance> => {
   // Registers external plugins.
   await app.register(fastifyAutoload, {
     dir: path.join(import.meta.dirname, "plugins/external"),
+  });
+
+  // Registers app plugins.
+  await app.register(fastifyAutoload, {
+    dir: path.join(import.meta.dirname, "plugins/app"),
   });
 
   // Register routes by reading the routes directory and automatically constructing the path.

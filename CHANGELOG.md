@@ -3,6 +3,7 @@
 - [\[0.1.0\] - 2025-07-05](#010---2025-07-05)
 - [\[0.2.0\] - 2025-07-05](#020---2025-07-05)
 - [\[0.3.0\] - 2025-07-05](#030---2025-07-05)
+- [\[0.4.0\] - 2025-07-07](#040---2025-07-07)
 
 ## [0.1.0] - 2025-07-05
 
@@ -20,3 +21,9 @@
 
 - Simplify Typebox schema handling
 - Remove response standardizer
+
+## [0.4.0] - 2025-07-07
+
+- Add initial PDF generation support
+- Add initial PDF CRUD actions
+- Add watcher for development
