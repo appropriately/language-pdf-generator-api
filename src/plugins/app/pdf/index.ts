@@ -1,6 +1,7 @@
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import { Pdf, PdfPost } from "../../../schemas/pdf.js";
+import { LANGUAGES } from "../../../utils/languages.js";
 import { createPdf } from "./pdf.js";
 
 interface PdfManager {
@@ -24,20 +25,25 @@ export function createPdfManager(fastify: FastifyInstance): PdfManager {
       ...data,
       id: crypto.randomUUID(),
       status: "pending",
+      originalLanguage: data.originalLanguage as keyof typeof LANGUAGES,
+      targetLanguage: data.targetLanguage as keyof typeof LANGUAGES,
     };
     pdfJobs.set(job.id, job);
 
     // TODO: Build a more robust job queue system.
     const processJob = async (job: Pdf): Promise<void> => {
       try {
+        const name = `${LANGUAGES[job.targetLanguage]} - ${job.level.charAt(0).toUpperCase() + job.level.slice(1)}`;
+
         job = {
           ...job,
           status: "processing",
-          fileName: `${job.id}.pdf`,
+          fileName: `${name.toLowerCase().replace(/\s+/g, "")}.pdf`,
+          name,
         };
         pdfJobs.set(job.id, job);
 
-        const filePath = await createPdf(job);
+        const filePath = await createPdf(fastify, job);
         job = {
           ...job,
           status: "completed",
@@ -53,9 +59,10 @@ export function createPdfManager(fastify: FastifyInstance): PdfManager {
         throw error;
       }
     };
-    
+
     processJob(job).catch((error) => {
       fastify.log.error(`Error processing PDF job ${job.id}:`, error);
+      fastify.log.debug(error.stack);
     });
 
     return job;
@@ -76,5 +83,6 @@ export default fp(
   },
   {
     name: "pdf-manager",
+    dependencies: ["ai-manager"],
   }
 );

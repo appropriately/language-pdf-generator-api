@@ -13,6 +13,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     "/",
     {
       schema: {
+        description: "Get all PDFs",
         tags: ["pdf"],
         response: {
           200: Type.Array(PdfResponseSchema),
@@ -26,6 +27,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     "/",
     {
       schema: {
+        description: "Create a new PDF",
         tags: ["pdf"],
         body: PdfPostSchema,
         response: {
@@ -46,6 +48,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     "/:id",
     {
       schema: {
+        description: "Get a PDF by id",
         tags: ["pdf"],
         params: Type.Object({
           id: IdSchema,
@@ -73,6 +76,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     "/:id/download",
     {
       schema: {
+        description: "Download a PDF by id",
         tags: ["pdf"],
         params: Type.Object({
           id: IdSchema,
@@ -142,6 +146,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     "/:id",
     {
       schema: {
+        description: "Delete a PDF by id",
         tags: ["pdf"],
         params: Type.Object({
           id: IdSchema,

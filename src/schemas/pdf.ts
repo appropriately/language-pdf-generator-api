@@ -1,9 +1,62 @@
 import { Static, Type } from "@fastify/type-provider-typebox";
 import { IdSchema } from "./common.js";
-import { ComponentSchema } from "./components.js";
+import { LANGUAGES } from "../utils/languages.js";
+
+const PdfJobLanguageEnum: Record<string, keyof typeof LANGUAGES> = {
+  Romanian: "ro",
+  English: "en-gb",
+};
+
+const PdfJobLevelEnum = {
+  Beginner: "beginner",
+  Intermediate: "intermediate",
+  Advanced: "advanced",
+} as const;
 
 export const PdfPostSchema = Type.Object({
-  components: Type.Array(ComponentSchema),
+  originalLanguage: Type.Union(
+    [
+      Type.Literal(PdfJobLanguageEnum.Romanian),
+      Type.Literal(PdfJobLanguageEnum.English),
+    ],
+    {
+      default: PdfJobLanguageEnum.English,
+    }
+  ),
+  targetLanguage: Type.Union(
+    [
+      Type.Literal(PdfJobLanguageEnum.Romanian),
+      Type.Literal(PdfJobLanguageEnum.English),
+    ],
+    {
+      default: PdfJobLanguageEnum.Romanian,
+    }
+  ),
+  level: Type.Union([
+    Type.Literal(PdfJobLevelEnum.Beginner),
+    Type.Literal(PdfJobLevelEnum.Intermediate),
+    Type.Literal(PdfJobLevelEnum.Advanced),
+  ]),
+  prompt: Type.Optional(
+    Type.String({
+      description: "The prompt for the PDF job",
+      examples: [
+        "Focus on the following topics: grammar, vocabulary, and pronunciation.",
+      ],
+    })
+  ),
+  skipAi: Type.Optional(
+    Type.Boolean({
+      description: "Whether to skip the AI generation",
+      default: false,
+    })
+  ),
+  debug: Type.Optional(
+    Type.Boolean({
+      description: "Whether to enable debug mode",
+      default: false,
+    })
+  ),
 });
 
 export type PdfPost = Static<typeof PdfPostSchema>;
@@ -40,13 +93,20 @@ export type Pdf = {
   status: (typeof PdfJobStatusEnum)[keyof typeof PdfJobStatusEnum];
   error?: string;
   filePath?: string;
+  name?: string;
   fileName?: string;
-  components: Static<typeof ComponentSchema>[];
+  originalLanguage: (typeof PdfJobLanguageEnum)[keyof typeof PdfJobLanguageEnum];
+  targetLanguage: (typeof PdfJobLanguageEnum)[keyof typeof PdfJobLanguageEnum];
+  level: (typeof PdfJobLevelEnum)[keyof typeof PdfJobLevelEnum];
+  prompt?: string;
+  skipAi?: boolean;
+  debug?: boolean;
 };
 
 export const PdfResponseSchema = Type.Object({
   id: IdSchema,
   status: PdfJobStatusEnumSchema,
   error: Type.Optional(ErrorSchema),
+  name: Type.Optional(NameSchema),
   fileName: Type.Optional(NameSchema),
 });

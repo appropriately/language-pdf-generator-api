@@ -30,6 +30,10 @@ export const config = {
       Number(process.env.REQUEST_BODY_SIZE_LIMIT) || 10000000,
   },
 
+  gemini: {
+    apiKey: process.env.GEMINI_API_KEY || "",
+  },
+
   logLevel: process.env.LOG_LEVEL || "info",
 } as const;
 

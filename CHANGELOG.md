@@ -4,6 +4,7 @@
 - [\[0.2.0\] - 2025-07-05](#020---2025-07-05)
 - [\[0.3.0\] - 2025-07-05](#030---2025-07-05)
 - [\[0.4.0\] - 2025-07-07](#040---2025-07-07)
+- [\[0.5.0\] - 2025-07-11](#050---2025-07-11)
 
 ## [0.1.0] - 2025-07-05
 
@@ -27,3 +28,9 @@
 - Add initial PDF generation support
 - Add initial PDF CRUD actions
 - Add watcher for development
+
+## [0.5.0] - 2025-07-11
+
+- Add initial AI generation of PDF components
+  - Currently only supports `@google/genai`
+- Updated dependencies

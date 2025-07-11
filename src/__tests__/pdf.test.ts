@@ -30,11 +30,19 @@ describe("PDF Endpoints", () => {
     it("should return all PDF jobs", async () => {
       const job1 = await request(app.server)
         .post("/api/v1/pdf")
-        .send({ components: [] });
+        .send({ 
+          originalLanguage: "en-gb",
+          targetLanguage: "ro",
+          level: "beginner"
+        });
 
       const job2 = await request(app.server)
         .post("/api/v1/pdf")
-        .send({ components: [] });
+        .send({ 
+          originalLanguage: "ro",
+          targetLanguage: "en-gb",
+          level: "intermediate"
+        });
 
       const response = await request(app.server).get("/api/v1/pdf");
 
@@ -55,7 +63,11 @@ describe("PDF Endpoints", () => {
 
   describe("POST /api/v1/pdf", () => {
     it("should create a new PDF job with valid data", async () => {
-      const jobData = { components: [] };
+      const jobData = { 
+        originalLanguage: "en-gb",
+        targetLanguage: "ro",
+        level: "beginner"
+      };
 
       const response = await request(app.server)
         .post("/api/v1/pdf")
@@ -73,11 +85,19 @@ describe("PDF Endpoints", () => {
     it("should create multiple jobs with different ids", async () => {
       const job1 = await request(app.server)
         .post("/api/v1/pdf")
-        .send({ components: [] });
+        .send({ 
+          originalLanguage: "en-gb",
+          targetLanguage: "ro",
+          level: "beginner"
+        });
 
       const job2 = await request(app.server)
         .post("/api/v1/pdf")
-        .send({ components: [] });
+        .send({ 
+          originalLanguage: "ro",
+          targetLanguage: "en-gb",
+          level: "intermediate"
+        });
 
       expect(job1.status).toBe(201);
       expect(job2.status).toBe(201);
@@ -87,7 +107,30 @@ describe("PDF Endpoints", () => {
     it("should accept extra fields (lenient schema)", async () => {
       const response = await request(app.server)
         .post("/api/v1/pdf")
-        .send({ message: "test", extra: "field", components: [] });
+        .send({ 
+          originalLanguage: "en-gb",
+          targetLanguage: "ro",
+          level: "beginner",
+          message: "test", 
+          extra: "field" 
+        });
+
+      expect(response.status).toBe(201);
+      expect(response.body).toMatchObject({
+        id: expect.any(String),
+      });
+    });
+
+    it("should accept optional prompt and skipAi fields", async () => {
+      const response = await request(app.server)
+        .post("/api/v1/pdf")
+        .send({ 
+          originalLanguage: "en-gb",
+          targetLanguage: "ro",
+          level: "beginner",
+          prompt: "Focus on grammar and vocabulary",
+          skipAi: true
+        });
 
       expect(response.status).toBe(201);
       expect(response.body).toMatchObject({
@@ -100,7 +143,11 @@ describe("PDF Endpoints", () => {
     it("should return a specific PDF job by ID", async () => {
       const createResponse = await request(app.server)
         .post("/api/v1/pdf")
-        .send({ components: [] });
+        .send({ 
+          originalLanguage: "en-gb",
+          targetLanguage: "ro",
+          level: "beginner"
+        });
 
       const jobId = createResponse.body.id;
 
@@ -134,7 +181,11 @@ describe("PDF Endpoints", () => {
     it("should handle UUID with different casing", async () => {
       const createResponse = await request(app.server)
         .post("/api/v1/pdf")
-        .send({ components: [] });
+        .send({ 
+          originalLanguage: "en-gb",
+          targetLanguage: "ro",
+          level: "beginner"
+        });
 
       const jobId = createResponse.body.id;
       const upperCaseId = jobId.toUpperCase();
@@ -152,7 +203,11 @@ describe("PDF Endpoints", () => {
     it("should delete a specific PDF job by ID", async () => {
       const createResponse = await request(app.server)
         .post("/api/v1/pdf")
-        .send({ components: [] });
+        .send({ 
+          originalLanguage: "en-gb",
+          targetLanguage: "ro",
+          level: "beginner"
+        });
 
       const jobId = createResponse.body.id;
 
@@ -191,15 +246,27 @@ describe("PDF Endpoints", () => {
     it("should allow deleting multiple jobs", async () => {
       const job1 = await request(app.server)
         .post("/api/v1/pdf")
-        .send({ components: [] });
+        .send({ 
+          originalLanguage: "en-gb",
+          targetLanguage: "ro",
+          level: "beginner"
+        });
 
       const job2 = await request(app.server)
         .post("/api/v1/pdf")
-        .send({ components: [] });
+        .send({ 
+          originalLanguage: "ro",
+          targetLanguage: "en-gb",
+          level: "intermediate"
+        });
 
       const job3 = await request(app.server)
         .post("/api/v1/pdf")
-        .send({ components: [] });
+        .send({ 
+          originalLanguage: "en-gb",
+          targetLanguage: "ro",
+          level: "advanced"
+        });
 
       const getAllResponse = await request(app.server).get("/api/v1/pdf");
       expect(getAllResponse.body).toHaveLength(3);
@@ -217,11 +284,19 @@ describe("PDF Endpoints", () => {
     it("should handle full CRUD lifecycle", async () => {
       const job1 = await request(app.server)
         .post("/api/v1/pdf")
-        .send({ components: [] });
+        .send({ 
+          originalLanguage: "en-gb",
+          targetLanguage: "ro",
+          level: "beginner"
+        });
 
       const job2 = await request(app.server)
         .post("/api/v1/pdf")
-        .send({ components: [] });
+        .send({ 
+          originalLanguage: "ro",
+          targetLanguage: "en-gb",
+          level: "intermediate"
+        });
 
       expect(job1.status).toBe(201);
       expect(job2.status).toBe(201);
@@ -251,7 +326,11 @@ describe("PDF Endpoints", () => {
       for (let i = 0; i < 5; i++) {
         const response = await request(app.server)
           .post("/api/v1/pdf")
-          .send({ components: [] });
+          .send({ 
+            originalLanguage: "en-gb",
+            targetLanguage: "ro",
+            level: "beginner"
+          });
 
         expect(response.status).toBe(201);
         expect(response.body).toHaveProperty("id");
@@ -280,9 +359,48 @@ describe("PDF Endpoints", () => {
     it("should handle missing Content-Type header", async () => {
       const response = await request(app.server)
         .post("/api/v1/pdf")
-        .send({ components: [] });
+        .send({ 
+          originalLanguage: "en-gb",
+          targetLanguage: "ro",
+          level: "beginner"
+        });
 
       expect(response.status).toBe(201); // Fastify is lenient with Content-Type
+    });
+
+    it("should reject requests with missing required fields", async () => {
+      const response = await request(app.server)
+        .post("/api/v1/pdf")
+        .send({ 
+          originalLanguage: "en-gb"
+          // missing targetLanguage and level
+        });
+
+      expect(response.status).toBe(400);
+    });
+
+    it("should reject requests with invalid language values", async () => {
+      const response = await request(app.server)
+        .post("/api/v1/pdf")
+        .send({ 
+          originalLanguage: "invalid",
+          targetLanguage: "ro",
+          level: "beginner"
+        });
+
+      expect(response.status).toBe(400);
+    });
+
+    it("should reject requests with invalid level values", async () => {
+      const response = await request(app.server)
+        .post("/api/v1/pdf")
+        .send({ 
+          originalLanguage: "en-gb",
+          targetLanguage: "ro",
+          level: "invalid"
+        });
+
+      expect(response.status).toBe(400);
     });
   });
 });

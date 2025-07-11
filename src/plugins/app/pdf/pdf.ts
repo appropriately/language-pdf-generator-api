@@ -1,15 +1,25 @@
+import { FastifyInstance } from "fastify";
 import fs from "fs";
 import os from "os";
 import path from "path";
 import PDFDocument from "pdfkit";
 import { Pdf } from "../../../schemas/pdf.js";
+import { addComponentToDocument } from "./components.js";
+import { getFont } from "./fonts.js";
+
+const BASE_FONT_SIZE = 12;
 
 /**
  * Creates a PDF document and returns the file path
  * @param pdf - The PDF object
  * @returns The file path of the created PDF
  */
-export const createPdf = async (pdf: Pdf): Promise<string> => {
+export const createPdf = async (
+  fastify: FastifyInstance,
+  pdf: Pdf
+): Promise<string> => {
+  const aiManager = fastify.aiManager;
+
   const doc = new PDFDocument({
     size: "A4",
     margins: {
@@ -25,52 +35,29 @@ export const createPdf = async (pdf: Pdf): Promise<string> => {
 
   doc.pipe(stream);
 
-  doc.fontSize(25).text("Basic PDF", { align: "center" });
+  const font = getFont("dejavu-sans");
+  if (!font) throw new Error("Font not found");
 
-  doc.addPage();
+  doc.font(font);
+  doc.fontSize(BASE_FONT_SIZE);
 
-  for (const component of pdf.components) {
-    switch (component.type) {
-      case "header":
-        doc.fontSize(25).text(component.text, { align: component.align });
-        if (component.level === 1)
-          doc.outline.addItem(component.text, { expanded: true });
-        break;
+  if (!pdf.skipAi) {
+    const components = await aiManager.generateComponents(pdf);
+    if (!components) throw new Error("Failed to generate PDF content");
 
-      case "text":
-        doc.fontSize(12).text(component.text);
-        break;
+    fastify.log.debug(JSON.stringify(components, null, 2));
 
-      case "table":
-        const data = [];
-        if (component.headers) data.push(component.headers);
-        for (const row of component.rows) data.push(row);
-
-        doc.table({
-          data,
-          rowStyles: (i) => {
-            if (component.headers && i === 0) {
-              return {
-                fontSize: 12,
-                border: {
-                  bottom: 2,
-                },
-                borderColor: {
-                  bottom: "black",
-                },
-              };
-            }
-          },
-        });
-
-        break;
-    }
+    for (const component of components)
+      addComponentToDocument(doc, component, pdf.debug);
   }
 
   doc.end();
 
+  fastify.log.debug("Document created");
+
   return new Promise((resolve, reject) => {
     stream.on("finish", () => {
+      fastify.log.debug("Document finished");
       resolve(filePath);
     });
     stream.on("error", (error) => {
