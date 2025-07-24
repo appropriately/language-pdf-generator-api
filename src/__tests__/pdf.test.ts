@@ -4,14 +4,19 @@ import { createInstance } from "../app.js";
 
 describe("PDF Endpoints", () => {
   let app: FastifyInstance;
+  let templateId: string;
 
   beforeAll(async () => {
-    app = await createInstance({ logLevel: "warn" });
+    app = await createInstance({ logLevel: "fatal" });
+
+    const template = await request(app.server).post("/api/v1/template").send({
+      name: "Test Template",
+      description: "Test Description",
+    });
+    templateId = template.body.id;
   });
 
-  afterAll(async () => {
-    await app.close();
-  });
+  afterAll(async () => await app.close());
 
   beforeEach(async () => {
     // Clear the state before each test
@@ -33,7 +38,8 @@ describe("PDF Endpoints", () => {
         .send({ 
           originalLanguage: "en-gb",
           targetLanguage: "ro",
-          level: "beginner"
+          level: "beginner",
+          templateId: templateId,
         });
 
       const job2 = await request(app.server)
@@ -41,7 +47,8 @@ describe("PDF Endpoints", () => {
         .send({ 
           originalLanguage: "ro",
           targetLanguage: "en-gb",
-          level: "intermediate"
+          level: "intermediate",
+          templateId: templateId,
         });
 
       const response = await request(app.server).get("/api/v1/pdf");
@@ -62,11 +69,19 @@ describe("PDF Endpoints", () => {
   });
 
   describe("POST /api/v1/pdf", () => {
+    it("should return 400 if templateId is missing", async () => {
+      const response = await request(app.server)
+        .post("/api/v1/pdf")
+        .send({ originalLanguage: "en-gb", targetLanguage: "ro", level: "beginner" });
+      expect(response.status).toBe(400);
+    });
+
     it("should create a new PDF job with valid data", async () => {
       const jobData = { 
         originalLanguage: "en-gb",
         targetLanguage: "ro",
-        level: "beginner"
+        level: "beginner",
+        templateId: templateId,
       };
 
       const response = await request(app.server)
@@ -88,7 +103,8 @@ describe("PDF Endpoints", () => {
         .send({ 
           originalLanguage: "en-gb",
           targetLanguage: "ro",
-          level: "beginner"
+          level: "beginner",
+          templateId: templateId,
         });
 
       const job2 = await request(app.server)
@@ -96,7 +112,8 @@ describe("PDF Endpoints", () => {
         .send({ 
           originalLanguage: "ro",
           targetLanguage: "en-gb",
-          level: "intermediate"
+          level: "intermediate",
+          templateId: templateId,
         });
 
       expect(job1.status).toBe(201);
@@ -111,8 +128,9 @@ describe("PDF Endpoints", () => {
           originalLanguage: "en-gb",
           targetLanguage: "ro",
           level: "beginner",
-          message: "test", 
-          extra: "field" 
+          message: "test",
+          extra: "field",
+          templateId: templateId,
         });
 
       expect(response.status).toBe(201);
@@ -129,7 +147,8 @@ describe("PDF Endpoints", () => {
           targetLanguage: "ro",
           level: "beginner",
           prompt: "Focus on grammar and vocabulary",
-          skipAi: true
+          skipAi: true,
+          templateId: templateId,
         });
 
       expect(response.status).toBe(201);
@@ -146,7 +165,8 @@ describe("PDF Endpoints", () => {
         .send({ 
           originalLanguage: "en-gb",
           targetLanguage: "ro",
-          level: "beginner"
+          level: "beginner",
+          templateId: templateId,
         });
 
       const jobId = createResponse.body.id;
@@ -184,7 +204,8 @@ describe("PDF Endpoints", () => {
         .send({ 
           originalLanguage: "en-gb",
           targetLanguage: "ro",
-          level: "beginner"
+          level: "beginner",
+          templateId: templateId,
         });
 
       const jobId = createResponse.body.id;
@@ -206,7 +227,8 @@ describe("PDF Endpoints", () => {
         .send({ 
           originalLanguage: "en-gb",
           targetLanguage: "ro",
-          level: "beginner"
+          level: "beginner",
+          templateId: templateId,
         });
 
       const jobId = createResponse.body.id;
@@ -249,7 +271,8 @@ describe("PDF Endpoints", () => {
         .send({ 
           originalLanguage: "en-gb",
           targetLanguage: "ro",
-          level: "beginner"
+          level: "beginner",
+          templateId: templateId,
         });
 
       const job2 = await request(app.server)
@@ -257,7 +280,8 @@ describe("PDF Endpoints", () => {
         .send({ 
           originalLanguage: "ro",
           targetLanguage: "en-gb",
-          level: "intermediate"
+          level: "intermediate",
+          templateId: templateId,
         });
 
       const job3 = await request(app.server)
@@ -265,7 +289,8 @@ describe("PDF Endpoints", () => {
         .send({ 
           originalLanguage: "en-gb",
           targetLanguage: "ro",
-          level: "advanced"
+          level: "advanced",
+          templateId: templateId,
         });
 
       const getAllResponse = await request(app.server).get("/api/v1/pdf");
@@ -287,7 +312,8 @@ describe("PDF Endpoints", () => {
         .send({ 
           originalLanguage: "en-gb",
           targetLanguage: "ro",
-          level: "beginner"
+          level: "beginner",
+          templateId: templateId,
         });
 
       const job2 = await request(app.server)
@@ -295,7 +321,8 @@ describe("PDF Endpoints", () => {
         .send({ 
           originalLanguage: "ro",
           targetLanguage: "en-gb",
-          level: "intermediate"
+          level: "intermediate",
+          templateId: templateId,
         });
 
       expect(job1.status).toBe(201);
@@ -329,7 +356,8 @@ describe("PDF Endpoints", () => {
           .send({ 
             originalLanguage: "en-gb",
             targetLanguage: "ro",
-            level: "beginner"
+            level: "beginner",
+            templateId: templateId,
           });
 
         expect(response.status).toBe(201);
@@ -362,7 +390,8 @@ describe("PDF Endpoints", () => {
         .send({ 
           originalLanguage: "en-gb",
           targetLanguage: "ro",
-          level: "beginner"
+          level: "beginner",
+          templateId: templateId,
         });
 
       expect(response.status).toBe(201); // Fastify is lenient with Content-Type
@@ -372,7 +401,8 @@ describe("PDF Endpoints", () => {
       const response = await request(app.server)
         .post("/api/v1/pdf")
         .send({ 
-          originalLanguage: "en-gb"
+          originalLanguage: "en-gb",
+          templateId: templateId,
           // missing targetLanguage and level
         });
 
@@ -385,7 +415,8 @@ describe("PDF Endpoints", () => {
         .send({ 
           originalLanguage: "invalid",
           targetLanguage: "ro",
-          level: "beginner"
+          level: "beginner",
+          templateId: templateId,
         });
 
       expect(response.status).toBe(400);
@@ -397,7 +428,8 @@ describe("PDF Endpoints", () => {
         .send({ 
           originalLanguage: "en-gb",
           targetLanguage: "ro",
-          level: "invalid"
+          level: "invalid",
+          templateId: templateId,
         });
 
       expect(response.status).toBe(400);

@@ -8,11 +8,11 @@ import {
   TableComponentSchema,
   TextComponentSchema,
 } from "../../../schemas/components.js";
-
-const BASE_FONT_SIZE = 12;
+import { TemplateHandler } from "../template/template.js";
 
 export const addComponentToDocument = (
   doc: PDFKit.PDFDocument,
+  template: TemplateHandler,
   component: Component,
   debug = false
 ): void => {
@@ -31,19 +31,19 @@ export const addComponentToDocument = (
 
       switch (header.level) {
         case 1:
-          doc.fontSize(25);
+          doc.fontSize(template.template.fontSize * 2);
           break;
         case 2:
-          doc.fontSize(20);
+          doc.fontSize(template.template.fontSize * 1.75);
           break;
         case 3:
-          doc.fontSize(16);
+          doc.fontSize(template.template.fontSize * 1.5);
           break;
         case 4:
-          doc.fontSize(14);
+          doc.fontSize(template.template.fontSize * 1.25);
           break;
         case 5:
-          doc.fontSize(12);
+          doc.fontSize(template.template.fontSize * 1.1);
           break;
       }
 
@@ -51,7 +51,7 @@ export const addComponentToDocument = (
         align: header.align as "left" | "center" | "right",
       });
 
-      doc.fontSize(BASE_FONT_SIZE);
+      doc.fontSize(template.template.fontSize);
 
       if (header.level === 1)
         doc.outline.addItem(header.text, { expanded: true });
@@ -93,7 +93,7 @@ export const addComponentToDocument = (
       if (question.hint) {
         doc.fontSize(8).text(question.hint);
         doc.moveDown(0.25);
-        doc.fontSize(BASE_FONT_SIZE);
+        doc.fontSize(template.template.fontSize);
       }
 
       doc.table({
@@ -120,6 +120,6 @@ export const addComponentToDocument = (
     doc.table({
       data: [[JSON.stringify(component, null, 2)]],
     });
-    doc.fontSize(BASE_FONT_SIZE);
+    doc.fontSize(template.template.fontSize);
   }
 };

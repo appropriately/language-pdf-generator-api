@@ -14,6 +14,10 @@ export default fp(async (fastify) => {
           name: "pdf",
           description: "Create and manage PDFs",
         },
+        {
+          name: "template",
+          description: "Create and manage templates",
+        },
       ],
     },
   });

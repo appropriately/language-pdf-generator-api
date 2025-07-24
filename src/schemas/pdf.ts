@@ -1,5 +1,5 @@
 import { Static, Type } from "@fastify/type-provider-typebox";
-import { IdSchema } from "./common.js";
+import { UUIDSchema } from "./common.js";
 import { LANGUAGES } from "../utils/languages.js";
 
 const PdfJobLanguageEnum: Record<string, keyof typeof LANGUAGES> = {
@@ -14,6 +14,7 @@ const PdfJobLevelEnum = {
 } as const;
 
 export const PdfPostSchema = Type.Object({
+  templateId: UUIDSchema,
   originalLanguage: Type.Union(
     [
       Type.Literal(PdfJobLanguageEnum.Romanian),
@@ -90,6 +91,7 @@ const NameSchema = Type.String({
 
 export type Pdf = {
   id: string;
+  templateId: string;
   status: (typeof PdfJobStatusEnum)[keyof typeof PdfJobStatusEnum];
   error?: string;
   filePath?: string;
@@ -104,7 +106,8 @@ export type Pdf = {
 };
 
 export const PdfResponseSchema = Type.Object({
-  id: IdSchema,
+  id: UUIDSchema,
+  templateId: UUIDSchema,
   status: PdfJobStatusEnumSchema,
   error: Type.Optional(ErrorSchema),
   name: Type.Optional(NameSchema),

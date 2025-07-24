@@ -18,6 +18,8 @@ declare module "fastify" {
 }
 
 export function createPdfManager(fastify: FastifyInstance): PdfManager {
+  const { templateManager } = fastify;
+
   const pdfJobs: Map<string, Pdf> = new Map();
 
   const create = async (data: PdfPost): Promise<Pdf> => {
@@ -43,7 +45,10 @@ export function createPdfManager(fastify: FastifyInstance): PdfManager {
         };
         pdfJobs.set(job.id, job);
 
-        const filePath = await createPdf(fastify, job);
+        const template = templateManager.get(job.templateId);
+        if (!template) throw new Error("Template not found");
+
+        const filePath = await createPdf(fastify, job, template);
         job = {
           ...job,
           status: "completed",
@@ -83,6 +88,6 @@ export default fp(
   },
   {
     name: "pdf-manager",
-    dependencies: ["ai-manager"],
+    dependencies: ["ai-manager", "template-manager"],
   }
 );

@@ -9,9 +9,7 @@ describe("Base Endpoints", () => {
     app = await createInstance({ logLevel: "warn" });
   });
 
-  afterAll(async () => {
-    await app.close();
-  });
+  afterAll(async () => await app.close());
 
   it("should return API info for root endpoint", async () => {
     const response = await request(app.server).get("/api/v1");

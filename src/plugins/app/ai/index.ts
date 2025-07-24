@@ -9,7 +9,9 @@ import { PdfPost } from "../../../schemas/pdf.js";
 
 interface AiManager {
   setModel: (model: string) => void;
-  generateComponents: (body: PdfPost) => Promise<Component[] | undefined>;
+  generateComponents: (
+    body: PdfPost,
+  ) => Promise<Component[] | undefined>;
 }
 
 declare module "fastify" {

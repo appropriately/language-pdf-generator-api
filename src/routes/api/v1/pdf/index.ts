@@ -3,11 +3,11 @@ import {
   Type,
 } from "@fastify/type-provider-typebox";
 import fs from "fs";
-import { ErrorSchema, IdSchema } from "../../../../schemas/common.js";
+import { ErrorSchema, UUIDSchema } from "../../../../schemas/common.js";
 import { PdfPostSchema, PdfResponseSchema } from "../../../../schemas/pdf.js";
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { pdfManager } = fastify;
+  const { pdfManager, templateManager } = fastify;
 
   fastify.get(
     "/",
@@ -32,13 +32,23 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         body: PdfPostSchema,
         response: {
           201: Type.Object({
-            id: IdSchema,
+            id: UUIDSchema,
           }),
+          404: ErrorSchema,
         },
       },
     },
     async (request, reply) => {
-      const job = await pdfManager.create(request.body);
+      const template = templateManager.get(request.body.templateId);
+      if (!template) {
+        reply.code(404);
+        return { error: "Template not found" };
+      }
+
+      const job = await pdfManager.create({
+        ...request.body,
+        templateId: template.template.id,
+      });
       reply.code(201);
       return job;
     }
@@ -51,7 +61,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         description: "Get a PDF by id",
         tags: ["pdf"],
         params: Type.Object({
-          id: IdSchema,
+          id: UUIDSchema,
         }),
         response: {
           200: PdfResponseSchema,
@@ -79,7 +89,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         description: "Download a PDF by id",
         tags: ["pdf"],
         params: Type.Object({
-          id: IdSchema,
+          id: UUIDSchema,
         }),
         response: {
           200: Type.Any(),
@@ -149,7 +159,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         description: "Delete a PDF by id",
         tags: ["pdf"],
         params: Type.Object({
-          id: IdSchema,
+          id: UUIDSchema,
         }),
         response: {
           204: Type.Null(),
