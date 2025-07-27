@@ -69,11 +69,14 @@ describe("PDF Endpoints", () => {
   });
 
   describe("POST /api/v1/pdf", () => {
-    it("should return 400 if templateId is missing", async () => {
+    it("should allow creating a PDF job without a templateId", async () => {
       const response = await request(app.server)
         .post("/api/v1/pdf")
         .send({ originalLanguage: "en-gb", targetLanguage: "ro", level: "beginner" });
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(201);
+      expect(response.body).toMatchObject({
+        id: expect.any(String),
+      });
     });
 
     it("should create a new PDF job with valid data", async () => {
