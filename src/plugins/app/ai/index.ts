@@ -1,11 +1,12 @@
-import { Type } from "@fastify/type-provider-typebox";
+import { Static, Type } from "@fastify/type-provider-typebox";
 import { GoogleGenAI } from "@google/genai";
 import { Value } from "@sinclair/typebox/value";
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import { config } from "../../../config/index.js";
-import { Component, ComponentSchema } from "../../../schemas/components.js";
+import { Component, ComponentSchema, ComponentType, QuestionSchema } from "../../../schemas/components.js";
 import { PdfPost } from "../../../schemas/pdf.js";
+import { generatePrompt } from "./utils.js";
 
 interface AiManager {
   setModel: (model: string) => void;
@@ -43,13 +44,12 @@ export function createAiManager(fastify: FastifyInstance): AiManager {
             role: "user",
             parts: [
               {
-                text: `Generate language learning material in ${
-                  body.originalLanguage
-                } for the following language: ${
-                  body.targetLanguage
-                } and level: ${body.level}. ${
+                text: generatePrompt(
+                  body.originalLanguage,
+                  body.targetLanguage,
+                  body.level,
                   body.prompt ? `The prompt is: ${body.prompt}` : ""
-                }`,
+                ),
               },
             ],
           },
@@ -59,7 +59,20 @@ export function createAiManager(fastify: FastifyInstance): AiManager {
       fastify.log.debug("AI response: %s", response.text);
       if (!response.text) return undefined;
 
-      const components = JSON.parse(response.text) as Component[];
+      // Because AI works on pure vibes and can't be trusted, we need to perform some manual validation
+      // and clean up.
+      const components = (JSON.parse(response.text) as Component[]).filter(
+        (component) => {
+          switch (component.type) {
+            case ComponentType.Question:
+              const question = component as Static<typeof QuestionSchema>;
+              return question.answer && question.answer.trim() !== "";
+            default:
+              return true;
+          }
+        }
+      );
+
       Value.Parse(Type.Array(ComponentSchema), components);
       return components;
     },

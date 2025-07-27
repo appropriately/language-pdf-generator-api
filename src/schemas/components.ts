@@ -37,7 +37,7 @@ export const QuestionSchema = Type.Object(
   },
   {
     description:
-      "A question component that displays a question to the user and stores the answer. Questions are used to collect information from users that will be included in the generated PDF. As a self-contained component, it should contain all the information needed to answer the question.",
+      "A question component that displays a question to the user and stores the answer. Questions are used to collect information from users that will be included in the generated PDF. As a self-contained component, it should contain all the information needed to answer the question. The answer field is REQUIRED and must contain the actual correct answer to the question.",
   }
 );
 
