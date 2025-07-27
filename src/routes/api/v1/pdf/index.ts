@@ -39,15 +39,16 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       },
     },
     async (request, reply) => {
-      const template = templateManager.get(request.body.templateId);
-      if (!template) {
-        reply.code(404);
-        return { error: "Template not found" };
+      if (request.body.templateId) {
+        const template = templateManager.get(request.body.templateId);
+        if (!template) {
+          reply.code(404);
+          return { error: "Template not found" };
+        }
       }
 
       const job = await pdfManager.create({
         ...request.body,
-        templateId: template.template.id,
       });
       reply.code(201);
       return job;
@@ -114,12 +115,12 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
       if (!pdf.filePath) {
         reply.code(404);
-        return { error: "PDF file not found" };
+        return { error: "PDF file is missing" };
       }
 
       if (!fs.existsSync(pdf.filePath)) {
         reply.code(404);
-        return { error: "PDF file not found" };
+        return { error: "PDF file no longer exists" };
       }
 
       fastify.log.info(`Downloading PDF ${pdf.id} from ${pdf.filePath}`);

@@ -72,7 +72,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         return { error: "Template not found" };
       }
 
-      return template;
+      return template.template;
     }
   );
 

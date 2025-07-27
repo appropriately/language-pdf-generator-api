@@ -14,7 +14,7 @@ const PdfJobLevelEnum = {
 } as const;
 
 export const PdfPostSchema = Type.Object({
-  templateId: UUIDSchema,
+  templateId: Type.Optional(UUIDSchema),
   originalLanguage: Type.Union(
     [
       Type.Literal(PdfJobLanguageEnum.Romanian),
@@ -91,7 +91,7 @@ const NameSchema = Type.String({
 
 export type Pdf = {
   id: string;
-  templateId: string;
+  templateId?: string;
   status: (typeof PdfJobStatusEnum)[keyof typeof PdfJobStatusEnum];
   error?: string;
   filePath?: string;
@@ -107,7 +107,7 @@ export type Pdf = {
 
 export const PdfResponseSchema = Type.Object({
   id: UUIDSchema,
-  templateId: UUIDSchema,
+  templateId: Type.Optional(UUIDSchema),
   status: PdfJobStatusEnumSchema,
   error: Type.Optional(ErrorSchema),
   name: Type.Optional(NameSchema),

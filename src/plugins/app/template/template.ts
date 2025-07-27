@@ -27,3 +27,20 @@ export class TemplateHandler {
     return document;
   }
 }
+
+export const DefaultTemplate = new TemplateHandler({
+  id: "default",
+  name: "Default",
+  description: "Default template",
+  font: Object.keys(FONTS)[0],
+  fontSize: 12,
+  size: "A4",
+  margins: {
+    top: 20,
+    bottom: 20,
+    left: 20,
+    right: 20,
+  },
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+});
