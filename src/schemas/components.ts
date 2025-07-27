@@ -18,13 +18,10 @@ export const QuestionSchema = Type.Object(
       description:
         "The type of component - must be 'question' for question components",
     }),
-    id: Type.String({
-      description:
-        "A required unique identifier for the question. This should be a short, descriptive name that identifies the question (e.g., 'hello_translation', 'sentence_translation').",
-    }),
     text: Type.String({
       description:
         "The question text that will be displayed to the user. This should be a clear, concise question that expects a single answer. Examples: 'How would you say 'hello' in Romanian?', 'Translate the following sentence into Romanian: 'I am a student.'",
+      minLength: 5,
     }),
     hint: Type.Optional(
       Type.String({
@@ -35,11 +32,12 @@ export const QuestionSchema = Type.Object(
     answer: Type.String({
       description:
         "The answer to the question. This should be the actual answer value, not placeholder text. For example, if the question is 'How do you say 'hello' in Romanian?', the answer might be 'Salut!'.",
+      minLength: 1,
     }),
   },
   {
     description:
-      "A question component that displays a question to the user and stores the answer. Questions are used to collect information from users that will be included in the generated PDF.",
+      "A question component that displays a question to the user and stores the answer. Questions are used to collect information from users that will be included in the generated PDF. As a self-contained component, it should contain all the information needed to answer the question.",
   }
 );
 
@@ -54,6 +52,7 @@ export const HeaderComponentSchema = Type.Object(
     text: Type.String({
       description:
         "The header text to display. This should be a concise, descriptive title that clearly indicates the section or content that follows.",
+      minLength: 4,
     }),
     align: Type.Optional(
       Type.String({
@@ -86,6 +85,7 @@ export const TextComponentSchema = Type.Object(
     text: Type.String({
       description:
         "The text content to display. This can be a paragraph, sentence, or any text content that should appear in the PDF. The text will be formatted as a regular paragraph.",
+      minLength: 10,
     }),
   },
   {
