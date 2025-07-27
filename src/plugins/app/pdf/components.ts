@@ -10,6 +10,31 @@ import {
 } from "../../../schemas/components.js";
 import { TemplateHandler } from "../template/template.js";
 
+export const addAnswerToDocument = (
+  doc: PDFKit.PDFDocument,
+  component: Static<typeof QuestionSchema>
+): void => {
+  doc.text(component.text);
+  doc.moveDown(0.25);
+
+  doc.table({
+    data: [
+      [
+        {
+          text: component.answer,
+          padding: "0.75em",
+        },
+      ],
+    ],
+    rowStyles: () => ({
+      border: [0, 0, 0, 0],
+      backgroundColor: "#f0f0f0",
+    }),
+  });
+
+  doc.moveDown();
+};
+
 export const addComponentToDocument = (
   doc: PDFKit.PDFDocument,
   template: TemplateHandler,
@@ -34,13 +59,13 @@ export const addComponentToDocument = (
           doc.fontSize(template.template.fontSize * 2);
           break;
         case 2:
-          doc.fontSize(template.template.fontSize * 1.75);
-          break;
-        case 3:
           doc.fontSize(template.template.fontSize * 1.5);
           break;
+        case 3:
+          doc.fontSize(template.template.fontSize * 1.35);
+          break;
         case 4:
-          doc.fontSize(template.template.fontSize * 1.25);
+          doc.fontSize(template.template.fontSize * 1.2);
           break;
         case 5:
           doc.fontSize(template.template.fontSize * 1.1);

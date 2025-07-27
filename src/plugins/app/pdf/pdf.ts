@@ -1,10 +1,12 @@
+import { Static } from "@sinclair/typebox";
 import { FastifyInstance } from "fastify";
 import fs from "fs";
 import os from "os";
 import path from "path";
+import { ComponentType, QuestionSchema } from "../../../schemas/components.js";
 import { Pdf } from "../../../schemas/pdf.js";
 import { TemplateHandler } from "../template/template.js";
-import { addComponentToDocument } from "./components.js";
+import { addAnswerToDocument, addComponentToDocument } from "./components.js";
 
 /**
  * Creates a PDF document and returns the file path
@@ -34,6 +36,34 @@ export const createPdf = async (
 
     for (const component of components)
       addComponentToDocument(doc, template, component, pdf.debug);
+
+    const answers = components.filter(
+      ({ type }) => type === ComponentType.Question
+    ) as Static<typeof QuestionSchema>[];
+
+    if (answers.length > 0) {
+      addComponentToDocument(
+        doc,
+        template,
+        {
+          type: ComponentType.NewPage,
+        },
+        pdf.debug
+      );
+
+      addComponentToDocument(
+        doc,
+        template,
+        {
+          type: ComponentType.Header,
+          text: "Answers",
+          level: 2,
+        },
+        pdf.debug
+      );
+
+      for (const answer of answers) addAnswerToDocument(doc, answer);
+    }
   }
 
   doc.end();

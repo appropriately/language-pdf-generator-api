@@ -2,6 +2,7 @@ import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import { Pdf, PdfPost } from "../../../schemas/pdf.js";
 import { LANGUAGES } from "../../../utils/languages.js";
+import { DefaultTemplate } from "../template/template.js";
 import { createPdf } from "./pdf.js";
 
 interface PdfManager {
@@ -35,7 +36,9 @@ export function createPdfManager(fastify: FastifyInstance): PdfManager {
     // TODO: Build a more robust job queue system.
     const processJob = async (job: Pdf): Promise<void> => {
       try {
-        const name = `${LANGUAGES[job.targetLanguage]} - ${job.level.charAt(0).toUpperCase() + job.level.slice(1)}`;
+        const name = `${LANGUAGES[job.targetLanguage]} - ${
+          job.level.charAt(0).toUpperCase() + job.level.slice(1)
+        }`;
 
         job = {
           ...job,
@@ -45,8 +48,11 @@ export function createPdfManager(fastify: FastifyInstance): PdfManager {
         };
         pdfJobs.set(job.id, job);
 
-        const template = templateManager.get(job.templateId);
-        if (!template) throw new Error("Template not found");
+        let template = DefaultTemplate;
+        if (job.templateId) {
+          const template = templateManager.get(job.templateId);
+          if (!template) throw new Error("Template not found");
+        }
 
         const filePath = await createPdf(fastify, job, template);
         job = {
